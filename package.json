@@ -1,0 +1,16 @@
+{
+    "name": "master-app",
+    "private": true,
+    "scripts": {
+        "dev:frontend": "cd frontend && npm run dev",
+        "dev:backend": "cd backend && npm run dev",
+        "check:frontend": "cd frontend && npm run check",
+        "check:backend": "cd backend && npm run check"
+    },
+    "devDependencies": {
+        "@supabase/supabase-js": "^2.89.0"
+    },
+    "dependencies": {
+        "react-native-web": "^0.21.2"
+    }
+}

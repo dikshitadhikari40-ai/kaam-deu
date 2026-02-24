@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  kaamdeu-api:
+    build: .
+    container_name: kd-app
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DB_PATH=/app/data/kaamdeu.db
+      - JWT_SECRET=${JWT_SECRET:-kaamdeu-production-secret-change-me}
+    volumes:
+      - kaamdeu-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  kaamdeu-data:
+    driver: local

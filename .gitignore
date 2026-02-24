@@ -1,0 +1,41 @@
+node_modules/
+frontend/node_modules/
+frontend/.expo/
+.expo/
+.env
+.env.local
+.DS_Store
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+# OS files
+Thumbs.db
+
+# dependencies
+
+**/node_modules/
+
+# Expo files
+
+**/.expo/
+**/.expo-shared/
+
+# Environment files
+
+**/.env
+**/.env.*.local
+
+# Build artefacts
+
+**/dist/
+**/build/
+**/.next/
+
+# Production environment files (NEVER commit these)
+**/.env.production
+**/.env.staging
+.env.production
+.env.staging
+frontend/.env.production
+backend/.env.production

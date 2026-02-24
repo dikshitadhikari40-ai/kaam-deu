@@ -1,0 +1,66 @@
+{
+  "cli": {
+    "version": ">= 5.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "base": {
+      "node": "18.18.0",
+      "resourceClass": "medium"
+    },
+    "development": {
+      "extends": "base",
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview": {
+      "extends": "base",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "image": "ubuntu-22.04-jdk-17-ndk-r25b"
+      },
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://kaamdeu-api.onrender.com",
+        "EXPO_PUBLIC_PUBLIC_BASE_URL": "https://kaamdeu-api.onrender.com",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://cdtgfeuinoqqxagutnlu.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_-yIXYi-Ro9n7K0tMYP-_lg_QUsn2sOK",
+        "EXPO_PUBLIC_AGORA_APP_ID": "0e89601719e149ff88d6c06e2f4a827d",
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "distribution": "store",
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://kaamdeu-api.onrender.com",
+        "EXPO_PUBLIC_PUBLIC_BASE_URL": "https://kaamdeu-api.onrender.com",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://cdtgfeuinoqqxagutnlu.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_-yIXYi-Ro9n7K0tMYP-_lg_QUsn2sOK",
+        "EXPO_PUBLIC_AGORA_APP_ID": "0e89601719e149ff88d6c06e2f4a827d",
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./google-services.json",
+        "track": "production"
+      },
+      "ios": {
+        "appleId": "your-apple-id@email.com",
+        "ascAppId": "your-app-store-connect-app-id"
+      }
+    }
+  }
+}
