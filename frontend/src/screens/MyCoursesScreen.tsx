@@ -13,29 +13,34 @@ import {
     Image,
     ActivityIndicator,
     Linking,
-    Alert,
-    Dimensions
+    Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import {
-    Course,
-    getUserEnrollments,
-    getCourseUrl
-} from '../services/learningService';
 import { PLATFORMS } from '../services/learningService';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-
-const { width } = Dimensions.get('window');
+import type { CoursePlatform } from '../types/learning';
 
 interface Props {
     navigation: any;
     route: any;
 }
 
-interface UserCourse extends Course {
+interface UserCourse {
+    id: string;
+    title: string;
+    description?: string;
+    thumbnail: string;
+    platform: string;
+    category: string;
+    level?: string;
+    duration?: string;
+    rating?: number;
+    instructor?: string;
+    isFree?: boolean;
+    originalUrl: string;
+    tags?: string[];
     enrolled_at: string;
     progress_percentage: number;
     last_accessed_at?: string;
@@ -73,10 +78,10 @@ const MyCoursesScreen: React.FC<Props> = ({ navigation }) => {
                         duration,
                         rating,
                         instructor,
-                        isFree,
-                        originalUrl,
+                        is_free,
+                        original_url,
                         tags,
-                        createdAt
+                        created_at
                     )
                 `)
                 .eq('user_id', user.id)
@@ -85,6 +90,8 @@ const MyCoursesScreen: React.FC<Props> = ({ navigation }) => {
             if (error) throw error;
             setEnrolledCourses(data?.map((item: any) => ({
                 ...item.courses,
+                isFree: item.courses.is_free,
+                originalUrl: item.courses.original_url,
                 enrolled_at: item.enrolled_at,
                 progress_percentage: item.progress_percentage || 0,
                 last_accessed_at: item.last_accessed_at
@@ -158,7 +165,7 @@ const MyCoursesScreen: React.FC<Props> = ({ navigation }) => {
     };
 
     const renderCourseCard = (course: UserCourse) => {
-        const platform = PLATFORMS[course.platform];
+        const platform = PLATFORMS[course.platform as CoursePlatform];
         const isCompleted = course.progress_percentage === 100;
 
         return (
@@ -171,7 +178,6 @@ const MyCoursesScreen: React.FC<Props> = ({ navigation }) => {
                 <Image
                     source={{ uri: course.thumbnail }}
                     style={styles.courseThumbnail}
-                    defaultSource={require('../assets/adaptive-icon.png')}
                 />
 
                 {/* Progress Overlay */}
