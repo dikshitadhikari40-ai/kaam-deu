@@ -722,6 +722,28 @@ export default function SettingsScreen({ navigation }: { navigation: any }) {
                     </View>
                 </View>
 
+                {/* Learning Section */}
+                <View style={styles.section}>
+                    <SectionHeader title="Learning & Skills" icon="book-open" />
+                    <View style={styles.sectionCard}>
+                        <SettingItem
+                            iconName="compass"
+                            label="Browse Courses"
+                            description="Free courses from Coursera, YouTube & more"
+                            type="link"
+                            onPress={() => navigation.navigate('LearningResources')}
+                        />
+                        <View style={styles.separator} />
+                        <SettingItem
+                            iconName="book"
+                            label="My Courses"
+                            description="Track your learning progress"
+                            type="link"
+                            onPress={() => navigation.navigate('MyCourses')}
+                        />
+                    </View>
+                </View>
+
                 {/* Linked Accounts Section */}
                 <View style={styles.section}>
                     <SectionHeader title="Linked Accounts" icon="link" />

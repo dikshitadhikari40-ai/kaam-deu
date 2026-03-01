@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, Suspense, lazy } from 'react';
 import { ActivityIndicator, View, Text, StyleSheet, Linking } from 'react-native';
 import {
   NavigationContainer,
@@ -7,18 +7,17 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Feather } from '../components/Icons';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-} from 'react-native-reanimated';
 
 // Auth context
 import { useAuth } from '../context/AuthContext';
 
-// Screen imports
+// Components
+import { NotificationIcon } from '../components/NotificationIcon';
+import BackButton from '../components/BackButton';
+import { Feather } from '../components/Icons';
+
+// ===== PERFORMANCE OPTIMIZATION ======
+// Core screens are imported normally (fast load for auth & main tabs)
 import RoleSelectScreen from '../screens/RoleSelectScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
@@ -32,33 +31,78 @@ import ProfileScreen from '../screens/ProfileScreen';
 import ExploreScreen from '../screens/ExploreScreen';
 import ChatScreen from '../screens/ChatScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import SubscriptionScreen from '../screens/SubscriptionScreen';
-import TermsOfServiceScreen from '../screens/TermsOfServiceScreen';
-import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
-import ChatConversationScreen from '../screens/ChatConversationScreen';
-import ChangePasswordScreen from '../screens/ChangePasswordScreen';
-import BlockedUsersScreen from '../screens/BlockedUsersScreen';
 import JobBoardScreen from '../screens/JobBoardScreen';
-import CreateJobPostScreen from '../screens/CreateJobPostScreen';
-import JobDetailScreen from '../screens/JobDetailScreen';
-import WriteReviewScreen from '../screens/WriteReviewScreen';
-import BadgesScreen from '../screens/BadgesScreen';
-import InsightsScreen from '../screens/InsightsScreen';
-import BoostScreen from '../screens/BoostScreen';
-import PremiumScreen from '../screens/PremiumScreen';
-import CallScreen from '../screens/CallScreen';
-import WorkIdentityListScreen from '../screens/WorkIdentityListScreen';
-import EditWorkIdentityScreen from '../screens/EditWorkIdentityScreen';
-import CVPreviewScreen from '../screens/CVPreviewScreen';
-import BusinessSearchScreen from '../screens/BusinessSearchScreen';
-import CompareIdentitiesScreen from '../screens/CompareIdentitiesScreen';
 import BusinessFeedScreen from '../screens/BusinessFeedScreen';
-import NewsFeedScreen from '../screens/NewsFeedScreen';
 import { NotificationsScreen } from '../screens/NotificationsScreen';
+
+// Lazy-loaded screens - only loaded when navigated to (reduces initial bundle size)
+// These screens are used less frequently, so lazy loading significantly improves startup time
+const lazySubscriptionScreen = lazy(() => import('../screens/SubscriptionScreen'));
+const lazyTermsOfServiceScreen = lazy(() => import('../screens/TermsOfServiceScreen'));
+const lazyPrivacyPolicyScreen = lazy(() => import('../screens/PrivacyPolicyScreen'));
+const lazyChatConversationScreen = lazy(() => import('../screens/ChatConversationScreen'));
+const lazyChangePasswordScreen = lazy(() => import('../screens/ChangePasswordScreen'));
+const lazyBlockedUsersScreen = lazy(() => import('../screens/BlockedUsersScreen'));
+const lazyCreateJobPostScreen = lazy(() => import('../screens/CreateJobPostScreen'));
+const lazyJobDetailScreen = lazy(() => import('../screens/JobDetailScreen'));
+const lazyWriteReviewScreen = lazy(() => import('../screens/WriteReviewScreen'));
+const lazyBadgesScreen = lazy(() => import('../screens/BadgesScreen'));
+const lazyInsightsScreen = lazy(() => import('../screens/InsightsScreen'));
+const lazyBoostScreen = lazy(() => import('../screens/BoostScreen'));
+const lazyPremiumScreen = lazy(() => import('../screens/PremiumScreen'));
+const lazyCallScreen = lazy(() => import('../screens/CallScreen'));
+const lazyWorkIdentityListScreen = lazy(() => import('../screens/WorkIdentityListScreen'));
+const lazyEditWorkIdentityScreen = lazy(() => import('../screens/EditWorkIdentityScreen'));
+const lazyCVPreviewScreen = lazy(() => import('../screens/CVPreviewScreen'));
+const lazyBusinessSearchScreen = lazy(() => import('../screens/BusinessSearchScreen'));
+const lazyCompareIdentitiesScreen = lazy(() => import('../screens/CompareIdentitiesScreen'));
+const lazyNewsFeedScreen = lazy(() => import('../screens/NewsFeedScreen'));
+const lazyLearningResourcesScreen = lazy(() => import('../screens/LearningResourcesScreen'));
+const lazyMyCoursesScreen = lazy(() => import('../screens/MyCoursesScreen'));
+
+// Helper wrapper for lazy-loaded screens with Suspense and navigation prop
+const createLazyWrapper = (LazyComponent: React.LazyExoticComponent<React.ComponentType<any>>) => {
+  return (props: any) => (
+    <Suspense fallback={<ScreenLoader />}>
+      <LazyComponent {...props} />
+    </Suspense>
+  );
+};
+
+// Create wrapped components for use in navigation
+const SubscriptionScreen = createLazyWrapper(lazySubscriptionScreen);
+const TermsOfServiceScreen = createLazyWrapper(lazyTermsOfServiceScreen);
+const PrivacyPolicyScreen = createLazyWrapper(lazyPrivacyPolicyScreen);
+const ChatConversationScreen = createLazyWrapper(lazyChatConversationScreen);
+const ChangePasswordScreen = createLazyWrapper(lazyChangePasswordScreen);
+const BlockedUsersScreen = createLazyWrapper(lazyBlockedUsersScreen);
+const CreateJobPostScreen = createLazyWrapper(lazyCreateJobPostScreen);
+const JobDetailScreen = createLazyWrapper(lazyJobDetailScreen);
+const WriteReviewScreen = createLazyWrapper(lazyWriteReviewScreen);
+const BadgesScreen = createLazyWrapper(lazyBadgesScreen);
+const InsightsScreen = createLazyWrapper(lazyInsightsScreen);
+const BoostScreen = createLazyWrapper(lazyBoostScreen);
+const PremiumScreen = createLazyWrapper(lazyPremiumScreen);
+const CallScreen = createLazyWrapper(lazyCallScreen);
+const WorkIdentityListScreen = createLazyWrapper(lazyWorkIdentityListScreen);
+const EditWorkIdentityScreen = createLazyWrapper(lazyEditWorkIdentityScreen);
+const CVPreviewScreen = createLazyWrapper(lazyCVPreviewScreen);
+const BusinessSearchScreen = createLazyWrapper(lazyBusinessSearchScreen);
+const CompareIdentitiesScreen = createLazyWrapper(lazyCompareIdentitiesScreen);
+const NewsFeedScreen = createLazyWrapper(lazyNewsFeedScreen);
+const LearningResourcesScreen = createLazyWrapper(lazyLearningResourcesScreen);
+const MyCoursesScreen = createLazyWrapper(lazyMyCoursesScreen);
+
+// Named exports - imported directly (only 2 files, minimal impact)
 import { LeaderboardScreen } from '../screens/LeaderboardScreen';
 import { IdentityVerificationScreen } from '../screens/IdentityVerificationScreen';
-import { NotificationIcon } from '../components/NotificationIcon';
-import BackButton from '../components/BackButton';
+
+// Fallback loader for lazy screens
+const ScreenLoader = () => (
+  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+    <ActivityIndicator size="large" color="#2557a7" />
+  </View>
+);
 
 // ====== TYPES ======
 
@@ -128,6 +172,8 @@ export type AppStackParamList = {
   Notifications: undefined;
   Leaderboard: undefined;
   IdentityVerification: undefined;
+  LearningResources: undefined;
+  MyCourses: undefined;
 };
 
 export type AppTabParamList = {
@@ -179,29 +225,17 @@ const animatedScreenOptions = {
   gestureDirection: 'horizontal' as const,
 };
 
-// ====== ANIMATED LOADER ======
+// ====== LOADING SCREEN ======
+// Simplified loader without Reanimated for faster initial load
 const FullScreenLoader = () => {
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.9);
-
-  useEffect(() => {
-    opacity.value = withTiming(1, { duration: 300 });
-    scale.value = withSpring(1, { damping: 15, stiffness: 150 });
-  }, []);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ scale: scale.value }],
-  }));
-
   return (
     <View style={styles.loaderContainer}>
-      <Animated.View style={[styles.loaderContent, animatedStyle]}>
+      <View style={styles.loaderContent}>
         <View style={styles.loaderIconContainer}>
           <ActivityIndicator size="large" color="#2557a7" />
         </View>
         <Text style={styles.loaderText}>Loading Kaam Deu…</Text>
-      </Animated.View>
+      </View>
     </View>
   );
 };
@@ -608,6 +642,25 @@ const AppStackNavigator: React.FC = () => {
           title: 'Verification',
           animation: 'slide_from_bottom',
           presentation: 'modal',
+        }}
+      />
+      {/* Learning Resources Screens */}
+      <AppStack.Screen
+        name="LearningResources"
+        component={LearningResourcesScreen}
+        options={{
+          ...screenWithBackButton,
+          title: 'Learning Resources',
+          animation: 'slide_from_right',
+        }}
+      />
+      <AppStack.Screen
+        name="MyCourses"
+        component={MyCoursesScreen}
+        options={{
+          ...screenWithBackButton,
+          title: 'My Courses',
+          animation: 'slide_from_right',
         }}
       />
     </AppStack.Navigator>

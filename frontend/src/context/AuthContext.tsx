@@ -267,9 +267,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkSupabaseSession = async () => {
         console.log('AuthContext: checkSupabaseSession starting...');
         try {
-            // Add timeout to prevent hanging
+            // REDUCED TIMEOUT: 5 seconds instead of 15 for faster feedback
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Session check timeout')), 15000)
+                setTimeout(() => reject(new Error('Session check timeout')), 5000)
             );
 
             const sessionPromise = supabase.auth.getSession();
@@ -285,6 +285,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
         } catch (error) {
             console.error('Error checking session:', error);
+            // Don't throw - let the user continue to login screen on timeout
         } finally {
             console.log('AuthContext: Setting isLoading = false');
             setIsLoading(false);

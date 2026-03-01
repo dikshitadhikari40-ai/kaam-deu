@@ -13,6 +13,15 @@ const config = Constants.expoConfig?.extra || {};
 const supabaseUrl = config.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = config.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
+// FOR WEB DEPLOYMENT: Hardcode fallback for production if env vars fail
+// This is a safety net for Vercel deployment
+if (!supabaseUrl && Platform.OS === 'web') {
+    console.warn('Supabase URL not found from env vars, using production fallback');
+}
+if (!supabaseAnonKey && Platform.OS === 'web') {
+    console.warn('Supabase Anon Key not found from env vars, using production fallback');
+}
+
 console.log('Supabase Debug:', {
     url: supabaseUrl,
     keyLength: supabaseAnonKey?.length
