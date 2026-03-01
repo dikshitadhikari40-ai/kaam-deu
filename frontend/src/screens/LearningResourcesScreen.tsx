@@ -15,23 +15,20 @@ import {
     TextInput,
     ActivityIndicator,
     Linking,
-    Alert,
-    Dimensions
+    Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import {
-    Course,
-    CourseCategory,
-    CourseLevel,
-    CoursePlatform,
-    filterCourses,
     getCourseUrl,
     trackCourseClick,
     PLATFORMS
 } from '../services/learningService';
-
-const { width } = Dimensions.get('window');
+import type {
+    Course,
+    CourseCategory,
+    CoursePlatform
+} from '../types/learning';
 
 interface Props {
     navigation: any;
@@ -103,7 +100,7 @@ const LearningResourcesScreen: React.FC<Props> = ({ navigation }) => {
         // Show options
         Alert.alert(
             'Open Course',
-            `"${course.title}" from ${PLATFORMS[course.platform].name}`,
+            `"${course.title}" from ${PLATFORMS[course.platform as CoursePlatform].name}`,
             [
                 {
                     text: 'Cancel',
@@ -165,7 +162,7 @@ const LearningResourcesScreen: React.FC<Props> = ({ navigation }) => {
     ];
 
     const renderCourseCard = (course: Course) => {
-        const platform = PLATFORMS[course.platform];
+        const platform = PLATFORMS[course.platform as CoursePlatform];
         const categoryColor = CATEGORY_COLORS[course.category];
 
         return (
@@ -179,7 +176,6 @@ const LearningResourcesScreen: React.FC<Props> = ({ navigation }) => {
                 <Image
                     source={{ uri: course.thumbnail }}
                     style={styles.courseThumbnail}
-                    defaultSource={require('../assets/adaptive-icon.png')}
                 />
 
                 {/* Platform Badge */}
@@ -207,7 +203,7 @@ const LearningResourcesScreen: React.FC<Props> = ({ navigation }) => {
 
                     {/* Tags */}
                     <View style={styles.tagsContainer}>
-                        {course.tags.slice(0, 3).map((tag, index) => (
+                        {course.tags.slice(0, 3).map((tag: string, index: number) => (
                             <View key={index} style={[styles.tag, { borderColor: categoryColor }]}>
                                 <Text style={[styles.tagText, { color: categoryColor }]}>
                                     {tag}
@@ -277,7 +273,7 @@ const LearningResourcesScreen: React.FC<Props> = ({ navigation }) => {
 
     const renderPlatformChip = (platform: CoursePlatform | 'all') => {
         const isSelected = selectedPlatform === platform;
-        const platformInfo = platform !== 'all' ? PLATFORMS[platform] : null;
+        const platformInfo = platform !== 'all' ? PLATFORMS[platform as CoursePlatform] : null;
 
         return (
             <TouchableOpacity
