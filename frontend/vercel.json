@@ -2,6 +2,7 @@
   "version": 2,
   "name": "kaam-deu",
   "buildCommand": "npx expo export -p web",
+  "_comment": "Learning Resources feature deployed - trigger rebuild",
   "outputDirectory": "dist",
   "framework": null,
   "rewrites": [
