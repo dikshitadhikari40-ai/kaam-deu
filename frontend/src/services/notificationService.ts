@@ -119,9 +119,16 @@ export const notificationService = {
 
     /**
      * Register for push notifications using Expo
+     * Note: Not supported on web platform
      */
     registerForPushNotifications: async (userId: string) => {
         try {
+            // Web platform doesn't support expo-notifications
+            if (typeof window !== 'undefined') {
+                console.log('Push notifications not supported on web platform');
+                return null;
+            }
+
             const Notifications = await import('expo-notifications');
             const Device = await import('expo-device');
             const { Platform } = await import('react-native');

@@ -17,10 +17,13 @@ export default function App() {
     ...Feather.font,
   });
 
-  // Initialize push notifications
+  // Initialize push notifications (mobile only)
   useEffect(() => {
     initErrorReporting();
-    setupNotifications();
+    // Skip notification setup on web platform
+    if (typeof window === 'undefined') {
+      setupNotifications();
+    }
   }, []);
 
   const setupNotifications = async () => {
