@@ -39,6 +39,11 @@ interface Profile {
     role: UserRole;
     name: string;
     is_profile_complete: boolean;
+    // Dual profile fields
+    roles?: UserRole[];                    // All roles this user has ['worker', 'business', or both]
+    active_role?: 'worker' | 'business';   // Currently active role
+    worker_is_complete?: boolean;          // Worker profile completion status
+    business_is_complete?: boolean;        // Business profile completion status
     // Worker fields
     job_title?: string;
     bio?: string;
@@ -98,7 +103,15 @@ interface AuthContextType {
     profile: Profile | null;
     selectedRole: UserRole;
     effectiveRole: 'worker' | 'business'; // Never null - always has a fallback
+    // Dual profile state
+    activeRole: 'worker' | 'business';     // Currently active role for dual profiles
+    hasWorkerProfile: boolean;             // User has a complete worker profile
+    hasBusinessProfile: boolean;           // User has a complete business profile
     setSelectedRole: (role: UserRole) => Promise<void>; // Fixed: Returns Promise
+    // Dual profile methods
+    switchRole: (role: 'worker' | 'business') => Promise<void>;  // Switch between worker/business
+    createWorkerProfile: () => Promise<void>;                    // Start worker profile setup
+    createBusinessProfile: () => Promise<void>;                  // Start business profile setup
     login: (email: string, password: string) => Promise<void>;
     register: (email: string, password: string, role: UserRole, profile?: any) => Promise<void>;
     socialLogin: (provider: 'google' | 'linkedin', providerId: string, email: string, name: string, photoUrl?: string, role?: UserRole) => Promise<void>;
@@ -120,6 +133,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [selectedRole, setSelectedRoleState] = useState<UserRole>(null);
+    // Dual profile state
+    const [activeRole, setActiveRole] = useState<'worker' | 'business'>('worker');
+    const [hasWorkerProfile, setHasWorkerProfile] = useState(false);
+    const [hasBusinessProfile, setHasBusinessProfile] = useState(false);
 
     const useSupabase = isSupabaseConfigured();
 
@@ -510,6 +527,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 console.log('AuthContext: Syncing selectedRole to match database role:', dbRole);
                 await setSelectedRole(dbRole);
             }
+
+            // Handle dual profile fields
+            const userRoles: UserRole[] = profileData?.roles || [dbRole].filter(Boolean);
+            const userActiveRole = profileData?.active_role || dbRole || 'worker';
+            const workerComplete = profileData?.worker_is_complete || (profileData?.role === 'worker' && profileData?.is_profile_complete);
+            const businessComplete = profileData?.business_is_complete || (profileData?.role === 'business' && profileData?.is_profile_complete);
+
+            // Set dual profile state
+            setActiveRole(userActiveRole);
+            setHasWorkerProfile(workerComplete);
+            setHasBusinessProfile(businessComplete);
+
+            console.log('AuthContext: Dual profile state loaded', {
+                roles: userRoles,
+                activeRole: userActiveRole,
+                hasWorker: workerComplete,
+                hasBusiness: businessComplete,
+            });
 
             setUser({
                 id: userId,
@@ -995,6 +1030,123 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    // ============================================
+    // DUAL PROFILE METHODS
+    // ============================================
+
+    /**
+     * Switch active role between worker and business
+     * Updates the active_role in database and refreshes profile
+     */
+    const switchRole = async (role: 'worker' | 'business') => {
+        if (!user?.id) {
+            throw new Error('Must be logged in to switch roles');
+        }
+
+        // Check if user has the requested role
+        const hasRole = role === 'worker' ? hasWorkerProfile : hasBusinessProfile;
+        if (!hasRole) {
+            throw new Error(`You don't have a ${role} profile yet. Create one first!`);
+        }
+
+        try {
+            // Update active_role in database
+            const { error } = await supabase
+                .from('profiles')
+                .update({ active_role: role })
+                .eq('id', user.id);
+
+            if (error) throw error;
+
+            // Update local state
+            setActiveRole(role);
+            await setSelectedRole(role);
+
+            console.log('AuthContext: Switched to role:', role);
+        } catch (error) {
+            console.error('AuthContext: Error switching role:', error);
+            throw error;
+        }
+    };
+
+    /**
+     * Initialize worker profile setup
+     * Sets active role to worker and navigates to worker setup
+     */
+    const createWorkerProfile = async () => {
+        if (!user?.id) {
+            throw new Error('Must be logged in to create a profile');
+        }
+
+        try {
+            // Add worker to roles array if not already present
+            const currentRoles = profile?.roles || [];
+            const newRoles = currentRoles.includes('worker') ? currentRoles : [...currentRoles, 'worker'];
+
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    roles: newRoles,
+                    active_role: 'worker',
+                    role: 'worker', // Also update legacy role field
+                })
+                .eq('id', user.id);
+
+            if (error) throw error;
+
+            // Update local state
+            setActiveRole('worker');
+            await setSelectedRole('worker');
+
+            // Reset profile completion for worker setup
+            setIsProfileComplete(false);
+
+            console.log('AuthContext: Worker profile initialization started');
+        } catch (error) {
+            console.error('AuthContext: Error initializing worker profile:', error);
+            throw error;
+        }
+    };
+
+    /**
+     * Initialize business profile setup
+     * Sets active role to business and navigates to business setup
+     */
+    const createBusinessProfile = async () => {
+        if (!user?.id) {
+            throw new Error('Must be logged in to create a profile');
+        }
+
+        try {
+            // Add business to roles array if not already present
+            const currentRoles = profile?.roles || [];
+            const newRoles = currentRoles.includes('business') ? currentRoles : [...currentRoles, 'business'];
+
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    roles: newRoles,
+                    active_role: 'business',
+                    role: 'business', // Also update legacy role field
+                })
+                .eq('id', user.id);
+
+            if (error) throw error;
+
+            // Update local state
+            setActiveRole('business');
+            await setSelectedRole('business');
+
+            // Reset profile completion for business setup
+            setIsProfileComplete(false);
+
+            console.log('AuthContext: Business profile initialization started');
+        } catch (error) {
+            console.error('AuthContext: Error initializing business profile:', error);
+            throw error;
+        }
+    };
+
     // Compute effectiveRole: selectedRole > profile role > user role > fallback to 'worker'
     // FIXED: Never returns null - always defaults to 'worker' for safe navigation
     const effectiveRole: 'worker' | 'business' = selectedRole || profile?.role || user?.role || 'worker';
@@ -1019,7 +1171,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 profile,
                 selectedRole,
                 effectiveRole,
+                activeRole,
+                hasWorkerProfile,
+                hasBusinessProfile,
                 setSelectedRole,
+                switchRole,
+                createWorkerProfile,
+                createBusinessProfile,
                 login,
                 register,
                 socialLogin,

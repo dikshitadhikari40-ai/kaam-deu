@@ -19,6 +19,7 @@ import { theme } from '../theme';
 import { accountService } from '../services/database';
 import { supabase } from '../lib/supabase';
 import { accountLinkingService } from '../services/auth';
+import RoleSwitcher from '../components/RoleSwitcher';
 
 // Cross-platform alert helper
 const showAlert = (
@@ -617,6 +618,9 @@ export default function SettingsScreen({ navigation }: { navigation: any }) {
                     </View>
                 </View>
 
+                {/* Role Switcher - Show for dual profile users */}
+                <RoleSwitcher style={styles.roleSwitcher} />
+
                 {/* Notifications Section */}
                 <View style={styles.section}>
                     <SectionHeader title="Notifications" icon="bell" />
@@ -1096,6 +1100,9 @@ const styles = StyleSheet.create({
         marginBottom: 24,
         alignItems: 'center',
         justifyContent: 'space-around',
+    },
+    roleSwitcher: {
+        marginBottom: 24,
     },
     statItem: {
         alignItems: 'center',

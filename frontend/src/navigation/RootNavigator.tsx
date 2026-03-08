@@ -768,7 +768,7 @@ const linking: LinkingOptions<RootStackParamList> = {
  */
 
 export const RootNavigator: React.FC = () => {
-  const { isAuthenticated, isLoading, isProfileComplete, hasSeenWelcome, effectiveRole } = useAuth();
+  const { isAuthenticated, isLoading, isProfileComplete, hasSeenWelcome, effectiveRole, activeRole } = useAuth();
   const prevStateRef = useRef({ isAuthenticated, hasSeenWelcome, isProfileComplete });
 
   // Track state changes for smooth transitions
@@ -795,6 +795,7 @@ export const RootNavigator: React.FC = () => {
       isProfileComplete,
       hasSeenWelcome,
       effectiveRole,
+      activeRole,
     });
   }
 
@@ -802,13 +803,16 @@ export const RootNavigator: React.FC = () => {
     return <FullScreenLoader />;
   }
 
+  // Use activeRole for dual profile support - this determines which flow to show
+  const currentRole = activeRole || effectiveRole;
+
   // Determine which onboarding component based on role
-  const OnboardingComponent = effectiveRole === 'business'
+  const OnboardingComponent = currentRole === 'business'
     ? BusinessOnboardingFlow
     : WorkerOnboardingFlow;
 
   // Determine which profile setup component based on role
-  const ProfileSetupComponent = effectiveRole === 'business'
+  const ProfileSetupComponent = currentRole === 'business'
     ? BusinessProfileSetupScreen
     : WorkerProfileSetupScreen;
 
@@ -851,7 +855,7 @@ export const RootNavigator: React.FC = () => {
             component={ProfileSetupComponent}
             options={{
               ...screenWithBackButton,
-              title: effectiveRole === 'business' ? 'Business Profile' : 'Your Profile',
+              title: currentRole === 'business' ? 'Business Profile' : 'Your Profile',
               animation: 'slide_from_right',
             }}
           />
